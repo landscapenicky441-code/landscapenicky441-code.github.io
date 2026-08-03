@@ -1,0 +1,291 @@
+<!DOCTYPE html><html lang="en" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>Tag: Methodology | LX Security Research</title><meta name="author" content="Liu Xiang"><meta name="copyright" content="Liu Xiang"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="Independent security researcher — authorized bug bounty, whitebox code audit, and AI&#x2F;LLM agent security research. Writeups, methodology, and vulnerability analysis.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="LX Security Research">
+<meta property="og:url" content="https://landscapenicky441-code.github.io/tags/Methodology/index.html">
+<meta property="og:site_name" content="LX Security Research">
+<meta property="og:description" content="Independent security researcher — authorized bug bounty, whitebox code audit, and AI&#x2F;LLM agent security research. Writeups, methodology, and vulnerability analysis.">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://avatars.githubusercontent.com/u/0?v=4">
+<meta property="article:author" content="Liu Xiang">
+<meta property="article:tag" content="security research, bug bounty, penetration testing, code audit, AI security, LLM security, MCP, prompt injection, web security, PortSwigger">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://avatars.githubusercontent.com/u/0?v=4"><script type="application/ld+json"></script><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://landscapenicky441-code.github.io/tags/Methodology/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="stylesheet" href="/css/index.css?v=5.6.1"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.3.1/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        const data = { value }
+
+        if (ttl != null) {
+          data.expiry = Date.now() + ttl * 86400000
+        }
+
+        localStorage.setItem(key, JSON.stringify(data))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return
+
+        try {
+          const data = JSON.parse(itemStr)
+
+          if (data.expiry && Date.now() > data.expiry) {
+            localStorage.removeItem(key)
+            return
+          }
+
+          return data.value
+        } catch {
+          localStorage.removeItem(key)
+        }
+      }
+    }
+
+    const scriptCache = new Map()
+    const cssCache = new Map()
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => {
+        if (scriptCache.has(url)) {
+          return scriptCache.get(url)
+        }
+
+        const promise = new Promise((resolve, reject) => {
+          const script = document.createElement('script')
+
+          script.src = url
+          script.async = true
+
+          for (const key in attr) {
+            script.setAttribute(key, attr[key])
+          }
+
+          script.onload = resolve
+          script.onerror = reject
+
+          document.head.appendChild(script)
+        })
+
+        scriptCache.set(url, promise)
+
+        return promise
+      },
+      getCSS: (url, id) => {
+        if (cssCache.has(url)) {
+          return cssCache.get(url)
+        }
+
+        const promise = new Promise((resolve, reject) => {
+          const link = document.createElement('link')
+
+          link.rel = 'stylesheet'
+          link.href = url
+
+          if (id) {
+            link.id = id
+          }
+
+          link.onload = resolve
+          link.onerror = reject
+
+          document.head.appendChild(link)
+        })
+
+        cssCache.set(url, promise)
+
+        return promise
+      },
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const metaThemeColor = document.querySelector('meta[name="theme-color"]')
+      const activateDarkMode = () => {
+        document.documentElement.dataset.theme = 'dark'
+        if (metaThemeColor !== null) {
+          metaThemeColor.setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.dataset.theme = 'light'
+        if (metaThemeColor !== null) {
+          metaThemeColor.setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          const mediaQueryDark = window.matchMedia('(prefers-color-scheme: dark)')
+          const mediaQueryLight = window.matchMedia('(prefers-color-scheme: light)')
+
+          if (theme === undefined) {
+            if (mediaQueryLight.matches) activateLightMode()
+            else if (mediaQueryDark.matches) activateDarkMode()
+            else {
+              const hour = new Date().getHours()
+              const start = 6
+              const end = 18
+              const isNight =
+                start < end
+                    ? hour < start || hour >= end
+                    : hour >= start || hour < end
+              isNight ? activateDarkMode() : activateLightMode()
+            }
+            mediaQueryDark.addEventListener('change', e => {
+              if (saveToLocal.get('theme') === undefined) {
+                e.matches ? activateDarkMode() : activateLightMode()
+              }
+            })
+          } else {
+            theme === 'light' ? activateLightMode() : activateDarkMode()
+          }
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: 'Copy Successful',
+    error: 'Copy Failed',
+    noSupport: 'Browser Not Supported'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: 'Just now',
+    min: 'minutes ago',
+    hour: 'hours ago',
+    day: 'days ago',
+    month: 'months ago'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.13.0/dist/infinitegrid.min.js',
+    buttonText: 'Load More'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: true,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: true
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'Tag: Methodology',
+  isHighlightShrink: false,
+  isToc: false,
+  pageType: 'tag'
+}</script><meta name="generator" content="Hexo 8.1.2"><link rel="alternate" href="/atom.xml" title="LX Security Research" type="application/atom+xml">
+</head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="https://avatars.githubusercontent.com/u/0?v=4" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">Articles</div><div class="length-num">7</div></a><a href="/tags/"><div class="headline">Tags</div><div class="length-num">24</div></a><a href="/categories/"><div class="headline">Categories</div><div class="length-num">4</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> Tags</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> Categories</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-user"></i><span> About</span></a></div></div></div></div><div class="page" id="body-wrap"><header class="not-home-page fixed" id="page-header"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">LX Security Research</span></a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> Tags</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> Categories</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-user"></i><span> About</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="page-site-info"><h1 id="site-title">Methodology</h1></div></header><main class="layout" id="content-inner"><div id="tag"><div class="article-sort-title">Tag - Methodology</div><div class="article-sort"><div class="article-sort-item year">2026</div><div class="article-sort-item no-article-cover"><div class="article-sort-item-info"><div class="article-sort-item-time"><i class="far fa-calendar-alt"></i><time class="post-meta-date-created" datetime="2026-05-20T08:45:00.000Z" title="Created 2026-05-20 16:45:00">2026-05-20</time></div><a class="article-sort-item-title" href="/2026/05/20/bug-bounty-methodology-hunter-not-scanner/" title="Hunter, Not Scanner — A Methodology for Authorized Bug Bounty">Hunter, Not Scanner — A Methodology for Authorized Bug Bounty</a></div></div><div class="article-sort-item no-article-cover"><div class="article-sort-item-info"><div class="article-sort-item-time"><i class="far fa-calendar-alt"></i><time class="post-meta-date-created" datetime="2026-04-05T02:15:00.000Z" title="Created 2026-04-05 10:15:00">2026-04-05</time></div><a class="article-sort-item-title" href="/2026/04/05/whitebox-code-audit-taint-methodology/" title="Whitebox Code Audit — A Source-to-Sink Taint Methodology">Whitebox Code Audit — A Source-to-Sink Taint Methodology</a></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="https://avatars.githubusercontent.com/u/0?v=4" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">Liu Xiang</div><div class="author-info-description">Independent security researcher. Authorized bug bounty, whitebox code audit, and AI/LLM agent red-teaming. All writeups cover practice labs and general technique — no undisclosed client findings.</div><div class="site-data"><a href="/archives/"><div class="headline">Articles</div><div class="length-num">7</div></a><a href="/tags/"><div class="headline">Tags</div><div class="length-num">24</div></a><a href="/categories/"><div class="headline">Categories</div><div class="length-num">4</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/landscapenicky441-code"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons"><a class="social-icon" href="https://github.com/landscapenicky441-code" target="_blank" title="GitHub"><i class="fab fa-github"></i></a><a class="social-icon" href="https://www.linkedin.com/in/%E7%A5%A5-%E5%88%98-5b0553424/" target="_blank" title="LinkedIn"><i class="fab fa-linkedin"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>Announcement</span></div><div class="announcement_content">Focus areas — <b>Web Security</b> · <b>AI Agent Security</b> · <b>Code Audit</b>. Authorized / defensive only.</div></div><div class="sticky_layout"><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>Recent Posts</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/05/20/bug-bounty-methodology-hunter-not-scanner/" title="Hunter, Not Scanner — A Methodology for Authorized Bug Bounty">Hunter, Not Scanner — A Methodology for Authorized Bug Bounty</a><time datetime="2026-05-20T08:45:00.000Z" title="Created 2026-05-20 16:45:00">2026-05-20</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/04/05/whitebox-code-audit-taint-methodology/" title="Whitebox Code Audit — A Source-to-Sink Taint Methodology">Whitebox Code Audit — A Source-to-Sink Taint Methodology</a><time datetime="2026-04-05T02:15:00.000Z" title="Created 2026-04-05 10:15:00">2026-04-05</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/03/08/ghost-bits-java-char-byte-waf-bypass/" title="Ghost Bits — Java char→byte Truncation as a WAF Bypass Primitive">Ghost Bits — Java char→byte Truncation as a WAF Bypass Primitive</a><time datetime="2026-03-08T06:00:00.000Z" title="Created 2026-03-08 14:00:00">2026-03-08</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/02/10/prompt-injection-exfiltration-tactics/" title="Prompt Injection to Data Exfiltration — Practical Tactics for LLM Apps">Prompt Injection to Data Exfiltration — Practical Tactics for LLM Apps</a><time datetime="2026-02-10T07:30:00.000Z" title="Created 2026-02-10 15:30:00">2026-02-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/01/15/ai-agent-mcp-tool-surface-attack/" title="Attacking the MCP Tool Surface — Recon and Abuse of AI Agents">Attacking the MCP Tool Surface — Recon and Abuse of AI Agents</a><time datetime="2026-01-15T03:00:00.000Z" title="Created 2026-01-15 11:00:00">2026-01-15</time></div></div></div></div><div class="card-widget card-categories"><div class="item-headline">
+            <i class="fas fa-folder-open"></i>
+            <span>Categories</span>
+            
+          </div>
+          <ul class="card-category-list" id="aside-cat-list">
+            <li class="card-category-list-item "><a class="card-category-list-link" href="/categories/AI-Agent-Security/"><span class="card-category-list-name">AI Agent Security</span><span class="card-category-list-count">2</span></a></li><li class="card-category-list-item "><a class="card-category-list-link" href="/categories/Code-Audit/"><span class="card-category-list-name">Code Audit</span><span class="card-category-list-count">1</span></a></li><li class="card-category-list-item "><a class="card-category-list-link" href="/categories/Methodology/"><span class="card-category-list-name">Methodology</span><span class="card-category-list-count">1</span></a></li><li class="card-category-list-item "><a class="card-category-list-link" href="/categories/Web-Security/"><span class="card-category-list-name">Web Security</span><span class="card-category-list-count">3</span></a></li>
+          </ul></div><div class="card-widget card-tags"><div class="item-headline"><i class="fas fa-tags"></i><span>Tags</span></div><div class="card-tag-cloud"><a href="/tags/MCP/" style="font-size: 1.15em; color: rgb(182, 149, 50);">MCP</a><a href="/tags/LLM/" style="font-size: 1.45em; color: rgb(124, 147, 153);">LLM</a><a href="/tags/Agent-Security/" style="font-size: 1.45em; color: rgb(81, 153, 58);">Agent Security</a><a href="/tags/Recon/" style="font-size: 1.45em; color: rgb(121, 199, 93);">Recon</a><a href="/tags/SSRF/" style="font-size: 1.45em; color: rgb(50, 175, 140);">SSRF</a><a href="/tags/Bug-Bounty/" style="font-size: 1.15em; color: rgb(166, 84, 123);">Bug Bounty</a><a href="/tags/Methodology/" style="font-size: 1.45em; color: rgb(162, 166, 130);">Methodology</a><a href="/tags/Reporting/" style="font-size: 1.15em; color: rgb(50, 182, 67);">Reporting</a><a href="/tags/WAF-Bypass/" style="font-size: 1.15em; color: rgb(71, 160, 56);">WAF Bypass</a><a href="/tags/Java/" style="font-size: 1.45em; color: rgb(184, 156, 73);">Java</a><a href="/tags/Unicode/" style="font-size: 1.15em; color: rgb(50, 109, 50);">Unicode</a><a href="/tags/Code-Audit/" style="font-size: 1.45em; color: rgb(76, 125, 129);">Code Audit</a><a href="/tags/CVE/" style="font-size: 1.15em; color: rgb(68, 89, 181);">CVE</a><a href="/tags/Access-Control/" style="font-size: 1.15em; color: rgb(166, 155, 161);">Access Control</a><a href="/tags/Business-Logic/" style="font-size: 1.15em; color: rgb(110, 50, 122);">Business Logic</a><a href="/tags/IDOR/" style="font-size: 1.15em; color: rgb(137, 50, 115);">IDOR</a><a href="/tags/PortSwigger/" style="font-size: 1.45em; color: rgb(50, 75, 95);">PortSwigger</a><a href="/tags/Writeup/" style="font-size: 1.45em; color: rgb(50, 90, 62);">Writeup</a><a href="/tags/Cloud/" style="font-size: 1.15em; color: rgb(103, 192, 66);">Cloud</a><a href="/tags/Prompt-Injection/" style="font-size: 1.15em; color: rgb(163, 50, 155);">Prompt Injection</a><a href="/tags/XSS/" style="font-size: 1.15em; color: rgb(96, 105, 188);">XSS</a><a href="/tags/Data-Exfiltration/" style="font-size: 1.15em; color: rgb(116, 161, 50);">Data Exfiltration</a><a href="/tags/Taint-Analysis/" style="font-size: 1.15em; color: rgb(50, 167, 184);">Taint Analysis</a><a href="/tags/Whitebox/" style="font-size: 1.15em; color: rgb(145, 100, 114);">Whitebox</a></div></div><div class="card-widget card-archives">
+    <div class="item-headline">
+      <i class="fas fa-archive"></i>
+      <span>Archives</span>
+      
+    </div>
+  
+    <ul class="card-archive-list">
+      
+        <li class="card-archive-list-item">
+          <a class="card-archive-list-link" href="/archives/2026/05/">
+            <span class="card-archive-list-date">
+              May 2026
+            </span>
+            <span class="card-archive-list-count">1</span>
+          </a>
+        </li>
+      
+        <li class="card-archive-list-item">
+          <a class="card-archive-list-link" href="/archives/2026/04/">
+            <span class="card-archive-list-date">
+              April 2026
+            </span>
+            <span class="card-archive-list-count">1</span>
+          </a>
+        </li>
+      
+        <li class="card-archive-list-item">
+          <a class="card-archive-list-link" href="/archives/2026/03/">
+            <span class="card-archive-list-date">
+              March 2026
+            </span>
+            <span class="card-archive-list-count">1</span>
+          </a>
+        </li>
+      
+        <li class="card-archive-list-item">
+          <a class="card-archive-list-link" href="/archives/2026/02/">
+            <span class="card-archive-list-date">
+              February 2026
+            </span>
+            <span class="card-archive-list-count">1</span>
+          </a>
+        </li>
+      
+        <li class="card-archive-list-item">
+          <a class="card-archive-list-link" href="/archives/2026/01/">
+            <span class="card-archive-list-date">
+              January 2026
+            </span>
+            <span class="card-archive-list-count">1</span>
+          </a>
+        </li>
+      
+        <li class="card-archive-list-item">
+          <a class="card-archive-list-link" href="/archives/2025/12/">
+            <span class="card-archive-list-date">
+              December 2025
+            </span>
+            <span class="card-archive-list-count">1</span>
+          </a>
+        </li>
+      
+        <li class="card-archive-list-item">
+          <a class="card-archive-list-link" href="/archives/2025/11/">
+            <span class="card-archive-list-date">
+              November 2025
+            </span>
+            <span class="card-archive-list-count">1</span>
+          </a>
+        </li>
+      
+    </ul>
+  </div><div class="card-widget card-webinfo"><div class="item-headline"><i class="fas fa-chart-line"></i><span>Website Info</span></div><div class="webinfo"><div class="webinfo-item"><div class="item-name">Article Count :</div><div class="item-count">7</div></div><div class="webinfo-item"><div class="item-name">Last Update :</div><div class="item-count" id="last-push-date" data-lastPushDate="2026-08-03T12:59:33.025Z"><i class="fa-solid fa-spinner fa-spin"></i></div></div></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2024 - 2026 By Liu Xiang</span></div><div class="footer_custom_text">Security research · Authorized & defensive use only</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="darkmode" type="button" title="Toggle Between Light and Dark Mode"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="Toggle Between Single-column and Double-column"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="Settings"><i class="fas fa-cog fa-spin"></i></button><button id="go-up" type="button" title="Back to Top"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.6.1"></script><script src="/js/main.js?v=5.6.1"></script><div class="js-pjax"></div></div></body></html>

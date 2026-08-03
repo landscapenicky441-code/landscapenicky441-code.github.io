@@ -1,0 +1,268 @@
+<!DOCTYPE html><html lang="en" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>Hunter, Not Scanner — A Methodology for Authorized Bug Bounty | LX Security Research</title><meta name="author" content="Liu Xiang"><meta name="copyright" content="Liu Xiang"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="Most people who plateau in bug bounty plateau for the same reason: they behave like a scanner. They reach for the most template-able primitive, find one access-control issue, and stop. The deep bugs —">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Hunter, Not Scanner — A Methodology for Authorized Bug Bounty">
+<meta property="og:url" content="https://landscapenicky441-code.github.io/2026/05/20/bug-bounty-methodology-hunter-not-scanner/index.html">
+<meta property="og:site_name" content="LX Security Research">
+<meta property="og:description" content="Most people who plateau in bug bounty plateau for the same reason: they behave like a scanner. They reach for the most template-able primitive, find one access-control issue, and stop. The deep bugs —">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://avatars.githubusercontent.com/u/0?v=4">
+<meta property="article:published_time" content="2026-05-20T08:45:00.000Z">
+<meta property="article:modified_time" content="2026-08-03T12:46:31.411Z">
+<meta property="article:author" content="Liu Xiang">
+<meta property="article:tag" content="Bug Bounty">
+<meta property="article:tag" content="Methodology">
+<meta property="article:tag" content="Recon">
+<meta property="article:tag" content="Reporting">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://avatars.githubusercontent.com/u/0?v=4"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Hunter, Not Scanner — A Methodology for Authorized Bug Bounty",
+  "url": "https://landscapenicky441-code.github.io/2026/05/20/bug-bounty-methodology-hunter-not-scanner/",
+  "image": "https://avatars.githubusercontent.com/u/0?v=4",
+  "datePublished": "2026-05-20T08:45:00.000Z",
+  "dateModified": "2026-08-03T12:46:31.411Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "Liu Xiang",
+      "url": "https://landscapenicky441-code.github.io"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://landscapenicky441-code.github.io/2026/05/20/bug-bounty-methodology-hunter-not-scanner/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="stylesheet" href="/css/index.css?v=5.6.1"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.3.1/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        const data = { value }
+
+        if (ttl != null) {
+          data.expiry = Date.now() + ttl * 86400000
+        }
+
+        localStorage.setItem(key, JSON.stringify(data))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return
+
+        try {
+          const data = JSON.parse(itemStr)
+
+          if (data.expiry && Date.now() > data.expiry) {
+            localStorage.removeItem(key)
+            return
+          }
+
+          return data.value
+        } catch {
+          localStorage.removeItem(key)
+        }
+      }
+    }
+
+    const scriptCache = new Map()
+    const cssCache = new Map()
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => {
+        if (scriptCache.has(url)) {
+          return scriptCache.get(url)
+        }
+
+        const promise = new Promise((resolve, reject) => {
+          const script = document.createElement('script')
+
+          script.src = url
+          script.async = true
+
+          for (const key in attr) {
+            script.setAttribute(key, attr[key])
+          }
+
+          script.onload = resolve
+          script.onerror = reject
+
+          document.head.appendChild(script)
+        })
+
+        scriptCache.set(url, promise)
+
+        return promise
+      },
+      getCSS: (url, id) => {
+        if (cssCache.has(url)) {
+          return cssCache.get(url)
+        }
+
+        const promise = new Promise((resolve, reject) => {
+          const link = document.createElement('link')
+
+          link.rel = 'stylesheet'
+          link.href = url
+
+          if (id) {
+            link.id = id
+          }
+
+          link.onload = resolve
+          link.onerror = reject
+
+          document.head.appendChild(link)
+        })
+
+        cssCache.set(url, promise)
+
+        return promise
+      },
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const metaThemeColor = document.querySelector('meta[name="theme-color"]')
+      const activateDarkMode = () => {
+        document.documentElement.dataset.theme = 'dark'
+        if (metaThemeColor !== null) {
+          metaThemeColor.setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.dataset.theme = 'light'
+        if (metaThemeColor !== null) {
+          metaThemeColor.setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          const mediaQueryDark = window.matchMedia('(prefers-color-scheme: dark)')
+          const mediaQueryLight = window.matchMedia('(prefers-color-scheme: light)')
+
+          if (theme === undefined) {
+            if (mediaQueryLight.matches) activateLightMode()
+            else if (mediaQueryDark.matches) activateDarkMode()
+            else {
+              const hour = new Date().getHours()
+              const start = 6
+              const end = 18
+              const isNight =
+                start < end
+                    ? hour < start || hour >= end
+                    : hour >= start || hour < end
+              isNight ? activateDarkMode() : activateLightMode()
+            }
+            mediaQueryDark.addEventListener('change', e => {
+              if (saveToLocal.get('theme') === undefined) {
+                e.matches ? activateDarkMode() : activateLightMode()
+              }
+            })
+          } else {
+            theme === 'light' ? activateLightMode() : activateDarkMode()
+          }
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: 'Copy Successful',
+    error: 'Copy Failed',
+    noSupport: 'Browser Not Supported'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: 'Just now',
+    min: 'minutes ago',
+    hour: 'hours ago',
+    day: 'days ago',
+    month: 'months ago'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.13.0/dist/infinitegrid.min.js',
+    buttonText: 'Load More'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: true,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: true
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'Hunter, Not Scanner — A Methodology for Authorized Bug Bounty',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><meta name="generator" content="Hexo 8.1.2"><link rel="alternate" href="/atom.xml" title="LX Security Research" type="application/atom+xml">
+</head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="https://avatars.githubusercontent.com/u/0?v=4" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">Articles</div><div class="length-num">7</div></a><a href="/tags/"><div class="headline">Tags</div><div class="length-num">24</div></a><a href="/categories/"><div class="headline">Categories</div><div class="length-num">4</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> Tags</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> Categories</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-user"></i><span> About</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg fixed" id="page-header"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">LX Security Research</span></a><a class="nav-page-title" href="/"><span class="site-name">Hunter, Not Scanner — A Methodology for Authorized Bug Bounty</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  Back to Home</span></span></a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> Tags</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> Categories</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-user"></i><span> About</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">Hunter, Not Scanner — A Methodology for Authorized Bug Bounty</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="fa-fw post-meta-icon far fa-calendar-alt"></i><span class="post-meta-label">Created</span><time datetime="2026-05-20T08:45:00.000Z" title="Created 2026-05-20 16:45:00">2026-05-20</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Methodology/">Methodology</a></span></div><div class="meta-secondline"></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><p>Most people who plateau in bug bounty plateau for the same reason: they behave like a scanner. They reach for the most template-able primitive, find one access-control issue, and stop. The deep bugs — business logic, chained privilege escalation, race conditions, server-side injection — stay invisible because they were never <em>looking</em> at the target, only at it. This is the methodology I use to hunt instead of scan, inside strict authorization boundaries.</p>
+<span id="more"></span>
+
+<h2 id="Model-the-target-before-you-touch-a-payload"><a href="#Model-the-target-before-you-touch-a-payload" class="headerlink" title="Model the target before you touch a payload"></a>Model the target before you touch a payload</h2><p>The single highest-leverage habit: <strong>understand the target before attacking it.</strong> Before any request, answer:</p>
+<ul>
+<li><strong>Actors</strong> — anonymous, user, premium, merchant, support, admin, API client, other tenants. What can each <em>do</em>?</li>
+<li><strong>Valuable assets</strong> — PII, money&#x2F;points&#x2F;coupons, files, admin functions, <em>other users’ data</em>, internal services. Where’s the value?</li>
+<li><strong>State machine</strong> — register → verify → pay → fulfil; order → settle → ship; refund; withdraw. What changes at each step?</li>
+<li><strong>Trust boundaries</strong> — client↔server, service↔service, tenant↔tenant, front-end vs back-end validation. Where do the two sides disagree?</li>
+<li><strong>Tech-stack fingerprint</strong> — framework, language, middleware. This decides which injection&#x2F;deserialization classes are even <em>physically possible</em>.</li>
+</ul>
+<p>Only now do you form hypotheses — and they must span classes. If 80% of your hypotheses are “access control,” you don’t understand the target yet. Force yourself: is there a race here? a logic skip? where does this parameter <em>flow</em> (injection &#x2F; SSRF)? can this multi-step flow be jumped?</p>
+<h2 id="The-floor-is-not-the-ceiling"><a href="#The-floor-is-not-the-ceiling" class="headerlink" title="The floor is not the ceiling"></a>The floor is not the ceiling</h2><p><strong>An access-control bug is a floor, not a ceiling.</strong> When you find one, don’t stop — ask “what does this unlock, and how far up the severity ladder does it chain?”</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">info disclosure  &lt;  broken read  &lt;  IDOR / logic / race (mid)  &lt;  account takeover  &lt;  RCE / full control (top)</span><br></pre></td></tr></table></figure>
+
+<p>IDOR and logic bugs are the <em>middle</em>. Standing in a business API, the first question is “can this RCE &#x2F; can this take over an account?”, not “can this IDOR?”. Injection → RCE, deserialization → RCE, upload → webshell, SSRF → metadata → takeover. Chase the top of the ladder; report the top.</p>
+<h2 id="Depth-vs-breadth-—-and-the-redline"><a href="#Depth-vs-breadth-—-and-the-redline" class="headerlink" title="Depth vs. breadth — and the redline"></a>Depth vs. breadth — and the redline</h2><p>Two axes people conflate:</p>
+<ul>
+<li><strong>Depth &#x3D; arguing severity.</strong> No ceiling. From one unauthorized read, <em>argue</em> “IDs enumerate → whole table readable → enumerate to an admin → takeover” — using two or three of your own test accounts to prove the pattern.</li>
+<li><strong>Breadth &#x3D; real extraction.</strong> Hard-capped by the rules. Prove <em>reachability</em>; never take the whole table.</li>
+</ul>
+<p>That distinction is the entire ethics of the job. You demonstrate impact by argument and minimal proof, not by mass extraction.</p>
+<h2 id="Proof-not-attack-surface"><a href="#Proof-not-attack-surface" class="headerlink" title="Proof, not attack surface"></a>Proof, not attack surface</h2><p>The bar for a report is strict: <strong>demonstrated harm, not demonstrated existence.</strong></p>
+<ul>
+<li>“The endpoint is reachable” &#x2F; “the CORS header reflects” &#x2F; “an ID enumerates” — that’s attack surface, <em>not</em> a vulnerability.</li>
+<li>A finding qualifies when harm is <strong>proven, not inferred</strong>: you actually read another user’s record, actually moved a value, actually executed. Delete the “if… then could…” language.</li>
+</ul>
+<p>One proven, qualifying bug beats nine attack-surface notes. Programs pay for demonstrated impact.</p>
+<h2 id="The-rules-I-work-under"><a href="#The-rules-I-work-under" class="headerlink" title="The rules I work under"></a>The rules I work under</h2><p>Everything above happens inside hard boundaries, because that’s what separates a researcher from an attacker:</p>
+<ul>
+<li><strong>In-scope only</strong> — a formal program or written authorization.</li>
+<li><strong>Minimal, non-destructive PoC</strong> — at most a few sample records to prove reachability; injection stops at <code>version()</code>, RCE stops at <code>whoami</code>.</li>
+<li><strong>No mass extraction, no DoS, no ransomware, no out-of-scope targeting.</strong></li>
+<li><strong>PII redacted</strong> in every artifact; every state-changing action logged and reverted where possible.</li>
+</ul>
+<h2 id="Reporting"><a href="#Reporting" class="headerlink" title="Reporting"></a>Reporting</h2><p>A good report is short and reproducible: the endpoint and parameter, the minimal PoC, the demonstrated impact, and a concrete fix. Severity is reasoned from the <strong>endpoint of the attack</strong> — what the attacker actually holds — not from how long or clever the chain was. A five-step chain that ends in non-sensitive data is not a critical; a one-step read of another user’s identity document is.</p>
+<p>That’s the whole game: understand the target, form cross-class hypotheses, chain to the top of the severity ladder in argument, prove the minimum, and report it cleanly — all strictly within authorization.</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>Author: </span><span class="post-copyright-info"><a href="https://landscapenicky441-code.github.io">Liu Xiang</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>Link: </span><span class="post-copyright-info"><a href="https://landscapenicky441-code.github.io/2026/05/20/bug-bounty-methodology-hunter-not-scanner/">https://landscapenicky441-code.github.io/2026/05/20/bug-bounty-methodology-hunter-not-scanner/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>Copyright Notice: </span><span class="post-copyright-info">All articles on this blog are licensed under <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> unless otherwise stated.</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Recon/">Recon</a><a class="post-meta__tags" href="/tags/Bug-Bounty/">Bug Bounty</a><a class="post-meta__tags" href="/tags/Methodology/">Methodology</a><a class="post-meta__tags" href="/tags/Reporting/">Reporting</a></div><div class="post-share"><div class="social-share" data-image="https://avatars.githubusercontent.com/u/0?v=4" data-sites="facebook,x,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related full-width" href="/2026/04/05/whitebox-code-audit-taint-methodology/" title="Whitebox Code Audit — A Source-to-Sink Taint Methodology"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">Next</div><div class="info-item-2">Whitebox Code Audit — A Source-to-Sink Taint Methodology</div></div><div class="info-2"><div class="info-item-1">Blackbox testing tells you that something is broken; whitebox source review tells you why, and catches the bugs no request ever reaches. This post is the methodology I use for whitebox audits across Java &#x2F; Python &#x2F; Go &#x2F; PHP &#x2F; JS-TS — a disciplined source-to-sink taint model rather than grepping for scary function names.   The core model: source → propagation → sinkEvery injection-class vulnerability is the same shape: 1SOURCE (untrusted input)  →  PROPAGATION (assignments,...</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>Related Articles</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/2026/01/15/ai-agent-mcp-tool-surface-attack/" title="Attacking the MCP Tool Surface — Recon and Abuse of AI Agents"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-01-15</div><div class="info-item-2">Attacking the MCP Tool Surface — Recon and Abuse of AI Agents</div></div><div class="info-2"><div class="info-item-1">As applications wire LLMs to real tools — file systems, HTTP fetchers, databases, shell — the tool surface becomes the new attack surface. The Model Context Protocol (MCP) standardises how an agent discovers and calls those tools, which is great for developers and equally great for attackers. This post covers how I fingerprint an AI stack and where the MCP tool surface breaks.   The six-layer AI stackBefore touching tools, model the target. A modern AI application is six enumerable layers: 12...</div></div></div></a><a class="pagination-related" href="/2026/04/05/whitebox-code-audit-taint-methodology/" title="Whitebox Code Audit — A Source-to-Sink Taint Methodology"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-04-05</div><div class="info-item-2">Whitebox Code Audit — A Source-to-Sink Taint Methodology</div></div><div class="info-2"><div class="info-item-1">Blackbox testing tells you that something is broken; whitebox source review tells you why, and catches the bugs no request ever reaches. This post is the methodology I use for whitebox audits across Java &#x2F; Python &#x2F; Go &#x2F; PHP &#x2F; JS-TS — a disciplined source-to-sink taint model rather than grepping for scary function names.   The core model: source → propagation → sinkEvery injection-class vulnerability is the same shape: 1SOURCE (untrusted input)  →  PROPAGATION (assignments,...</div></div></div></a></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="https://avatars.githubusercontent.com/u/0?v=4" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">Liu Xiang</div><div class="author-info-description">Independent security researcher. Authorized bug bounty, whitebox code audit, and AI/LLM agent red-teaming. All writeups cover practice labs and general technique — no undisclosed client findings.</div><div class="site-data"><a href="/archives/"><div class="headline">Articles</div><div class="length-num">7</div></a><a href="/tags/"><div class="headline">Tags</div><div class="length-num">24</div></a><a href="/categories/"><div class="headline">Categories</div><div class="length-num">4</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/landscapenicky441-code"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons"><a class="social-icon" href="https://github.com/landscapenicky441-code" target="_blank" title="GitHub"><i class="fab fa-github"></i></a><a class="social-icon" href="https://www.linkedin.com/in/%E7%A5%A5-%E5%88%98-5b0553424/" target="_blank" title="LinkedIn"><i class="fab fa-linkedin"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>Announcement</span></div><div class="announcement_content">Focus areas — <b>Web Security</b> · <b>AI Agent Security</b> · <b>Code Audit</b>. Authorized / defensive only.</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>Contents</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Model-the-target-before-you-touch-a-payload"><span class="toc-number">1.</span> <span class="toc-text">Model the target before you touch a payload</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#The-floor-is-not-the-ceiling"><span class="toc-number">2.</span> <span class="toc-text">The floor is not the ceiling</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Depth-vs-breadth-%E2%80%94-and-the-redline"><span class="toc-number">3.</span> <span class="toc-text">Depth vs. breadth — and the redline</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Proof-not-attack-surface"><span class="toc-number">4.</span> <span class="toc-text">Proof, not attack surface</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#The-rules-I-work-under"><span class="toc-number">5.</span> <span class="toc-text">The rules I work under</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Reporting"><span class="toc-number">6.</span> <span class="toc-text">Reporting</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>Recent Posts</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/05/20/bug-bounty-methodology-hunter-not-scanner/" title="Hunter, Not Scanner — A Methodology for Authorized Bug Bounty">Hunter, Not Scanner — A Methodology for Authorized Bug Bounty</a><time datetime="2026-05-20T08:45:00.000Z" title="Created 2026-05-20 16:45:00">2026-05-20</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/04/05/whitebox-code-audit-taint-methodology/" title="Whitebox Code Audit — A Source-to-Sink Taint Methodology">Whitebox Code Audit — A Source-to-Sink Taint Methodology</a><time datetime="2026-04-05T02:15:00.000Z" title="Created 2026-04-05 10:15:00">2026-04-05</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/03/08/ghost-bits-java-char-byte-waf-bypass/" title="Ghost Bits — Java char→byte Truncation as a WAF Bypass Primitive">Ghost Bits — Java char→byte Truncation as a WAF Bypass Primitive</a><time datetime="2026-03-08T06:00:00.000Z" title="Created 2026-03-08 14:00:00">2026-03-08</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/02/10/prompt-injection-exfiltration-tactics/" title="Prompt Injection to Data Exfiltration — Practical Tactics for LLM Apps">Prompt Injection to Data Exfiltration — Practical Tactics for LLM Apps</a><time datetime="2026-02-10T07:30:00.000Z" title="Created 2026-02-10 15:30:00">2026-02-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/01/15/ai-agent-mcp-tool-surface-attack/" title="Attacking the MCP Tool Surface — Recon and Abuse of AI Agents">Attacking the MCP Tool Surface — Recon and Abuse of AI Agents</a><time datetime="2026-01-15T03:00:00.000Z" title="Created 2026-01-15 11:00:00">2026-01-15</time></div></div></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2024 - 2026 By Liu Xiang</span></div><div class="footer_custom_text">Security research · Authorized & defensive use only</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="Reading Mode"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="Toggle Between Light and Dark Mode"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="Toggle Between Single-column and Double-column"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="Settings"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="Table of Contents"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="Back to Top"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.6.1"></script><script src="/js/main.js?v=5.6.1"></script><div class="js-pjax"></div></div></body></html>
